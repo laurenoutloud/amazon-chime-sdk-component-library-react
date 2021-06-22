@@ -38,8 +38,8 @@ const getMeeting = async (meetingTitle) => {
 
 // Add meeting in the meeting table
 const putMeeting = async (title, meetingInfo) => {
+  
   var startTime = new Date();
-  console.log(startTime);
   await ddb.putItem({
     TableName: meetingsTableName,
     Item: {
@@ -95,6 +95,29 @@ function getNotificationsConfig() {
   return {}
 }
 
+function updateEndTime(title) {
+  var endTime = new Date();
+  
+  var params = {
+    TableName: meetingsTableName,
+    Key: {
+      "Title": title
+    },
+    UpdateExpression: "set EndTime = :e",
+    ExpressionAttributeValues: {
+      ":e" : JSON.stringify(endTime)
+    },
+    ReturnValues:"UPDATED_NEW"
+  };
+  
+  var docClient = new AWS.DynamoDB.DocumentClient();
+  
+  docClient.update(params, function(err, data) {
+        if (err) console.log(err);
+        else console.log(data);
+    });
+}
+
 exports.createMeeting = async (event, context, callback) => {
   var response = {
     "statusCode": 200,
@@ -104,7 +127,7 @@ exports.createMeeting = async (event, context, callback) => {
   };
   const title = event.queryStringParameters.title;
   const region = event.queryStringParameters.region || 'us-east-1';
-
+  
   if (!title) {
     response["statusCode"] = 400;
     response["body"] = "Must provide title";
@@ -184,6 +207,7 @@ exports.join = async (event, context, callback) => {
   callback(null, response);
 };
 
+  
 exports.end = async (event, context, callback) => {
   var response = {
     "statusCode": 200,
@@ -192,12 +216,15 @@ exports.end = async (event, context, callback) => {
     "isBase64Encoded": false
   };
   const title = event.queryStringParameters.title;
+  updateEndTime(title);
   let meetingInfo = await getMeeting(title);
   await chime.deleteMeeting({
     MeetingId: meetingInfo.Meeting.MeetingId,
   }).promise();
+  
   callback(null, response);
 };
+
 
 exports.attendee = async (event, context, callback) => {
   var response = {
