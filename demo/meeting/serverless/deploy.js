@@ -5,8 +5,8 @@ const path = require('path');
 // Parameters
 let app = 'meeting';
 let region = 'us-east-1';
-let bucket = ``;
-let stack = ``;
+let bucket = `chimesdk-demo-bucket-c12345`;
+let stack = `chimesdk-demo-stack-c12345`;
 let useEventBridge = false;
 let disablePrintingLogs = false;
 

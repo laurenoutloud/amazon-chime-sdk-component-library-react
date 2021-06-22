@@ -38,6 +38,8 @@ const getMeeting = async (meetingTitle) => {
 
 // Add meeting in the meeting table
 const putMeeting = async (title, meetingInfo) => {
+  var startTime = new Date();
+  console.log(startTime);
   await ddb.putItem({
     TableName: meetingsTableName,
     Item: {
@@ -45,7 +47,8 @@ const putMeeting = async (title, meetingInfo) => {
       'Data': { S: JSON.stringify(meetingInfo) },
       'TTL': {
         N: '' + oneDayFromNow
-      }
+      },
+      'StartTime': { S: JSON.stringify(startTime)}
     }
   }).promise();
 }
